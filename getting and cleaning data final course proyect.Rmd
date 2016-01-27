@@ -1,0 +1,131 @@
+---
+title: "Getting and cleaning data final proyect"
+author: "Christian Uribe"
+date: "27 de enero de 2016"
+output: word_document
+---
+The purpose of this project is to demonstrate your ability to collect, work with, and clean a data set. The goal is to prepare tidy data that can be used for later analysis. You will be graded by your peers on a series of yes/no questions related to the project. You will be required to submit: 1) a tidy data set as described below, 2) a link to a Github repository with your script for performing the analysis, and 3) a code book that describes the variables, the data, and any transformations or work that you performed to clean up the data called CodeBook.md. You should also include a README.md in the repo with your scripts. This repo explains how all of the scripts work and how they are connected.
+
+One of the most exciting areas in all of data science right now is wearable computing - see for example this article . Companies like Fitbit, Nike, and Jawbone Up are racing to develop the most advanced algorithms to attract new users. The data linked to from the course website represent data collected from the accelerometers from the Samsung Galaxy S smartphone. A full description is available at the site where the data was obtained:
+
+http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones
+
+Here are the data for the project:
+
+https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip
+
+You should create one R script called run_analysis.R that does the following.
+
+Merges the training and the test sets to create one data set.
+Extracts only the measurements on the mean and standard deviation for each measurement.
+Uses descriptive activity names to name the activities in the data set
+Appropriately labels the data set with descriptive variable names.
+From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+
+What i´m doing here is checking if exist a directory and save the variable with the name of the file.
+
+```{r}
+if(!file.exists("./data")){dir.create("./data")}
+fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
+download.file(fileUrl,destfile="./data/Dataset.zip")
+```
+Save the file and later unzip it.
+Unzip the file with the next sintaxis.
+
+```{r}
+unzip(zipfile="./data/Dataset.zip",exdir="./data")
+```
+
+Obtain the list of the files that are inside with the data.
+
+```{r}
+destino <- file.path("./data" , "UCI HAR Dataset")
+archivos<-list.files(destino, recursive=TRUE)
+archivos
+```
+Read the data of the files in the variables
+Read the files of ACTIVITY
+```{r}
+Datospruebadeentrenamiento <- read.table(file.path(destino, "test" , "Y_test.txt" ),header = FALSE)
+Datosdeactividadeprueba <- read.table(file.path(destino, "train", "Y_train.txt"),header = FALSE)
+```
+Read tge files of subject
+```{r}
+datostemaentrenamiento <- read.table(file.path(destino, "train", "subject_train.txt"),header = FALSE)
+datostemaprueba <- read.table(file.path(destino, "test" , "subject_test.txt"),header = FALSE)
+```
+Read the files of features
+```{r}
+datoscaracteristicaprueba  <- read.table(file.path(destino, "test" , "X_test.txt" ),header = FALSE)
+datoscaracteristicaentrenamiento <- read.table(file.path(destino, "train", "X_train.txt"),header = FALSE)
+```
+We see the properties of the variables
+```{r}
+str(Datospruebadeentrenamiento)
+
+str(Datosdeactividadeprueba)
+
+str(datostemaentrenamiento)
+
+str(datostemaprueba)
+
+str(datoscaracteristicaprueba)
+
+str(datoscaracteristicaentrenamiento)
+```
+Merges the training and the test sets to create one data set
+```{r}
+dataSubject <- rbind(Datospruebadeentrenamiento, Datosdeactividadeprueba)
+dataActivity<- rbind(datostemaentrenamiento, datostemaprueba)
+dataFeatures<- rbind(datoscaracteristicaprueba, datoscaracteristicaentrenamiento)
+
+```
+Names of the variables.
+```{r}
+names(dataSubject)<-c("subject")
+names(dataActivity)<- c("activity")
+dataFeaturesNames <- read.table(file.path(destino, "features.txt"),head=FALSE)
+names(dataFeatures)<- dataFeaturesNames$V2
+```
+Bombine the columns to obtain the data of the dataframe.
+```{r}
+dataCombine <- cbind(dataSubject, dataActivity)
+Data <- cbind(dataFeatures, dataCombine)
+```
+Measurements extract only the average and standard deviation for each measurement.
+question 2
+```{r}
+subdataFeaturesNames<-dataFeaturesNames$V2[grep("mean\\(\\)|std\\(\\)", dataFeaturesNames$V2)]
+
+selectedNames<-c(as.character(subdataFeaturesNames), "subject", "activity" )
+Data<-subset(Data,select=selectedNames)
+
+str(Data)
+
+```
+question 3
+```{r}
+activityLabels <- read.table(file.path(destino, "activity_labels.txt"),header = FALSE)
+head(Data$activity,30)
+
+```
+ question 4
+```{r}
+names(Data)<-gsub("^t", "time", names(Data))
+names(Data)<-gsub("^f", "frequency", names(Data))
+names(Data)<-gsub("Acc", "Accelerometer", names(Data))
+names(Data)<-gsub("Gyro", "Gyroscope", names(Data))
+names(Data)<-gsub("Mag", "Magnitude", names(Data))
+names(Data)<-gsub("BodyBody", "Body", names(Data))
+
+names(Data)
+```
+question 5
+```{r}
+library(plyr);
+Data2<-aggregate(. ~subject + activity, Data, mean)
+Data2<-Data2[order(Data2$subject,Data2$activity),]
+write.table(Data2, file = "tidydata.txt",row.name=FALSE)
+
+```
+
