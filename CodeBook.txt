@@ -1,0 +1,32 @@
+CODEBOOK.
+IDENTIFIERS:
+*archivos -here we put all the data
+*Datospruebadeentrenamiento - data of the activity.
+*Datosdeactividadeprueba - data of the activity.
+*datostemaentrenamiento - data of the subject
+*datostemaprueba - data of the subject.
+
+MEASURES
+*Datospruebadeentrenamiento
+
+*Datosdeactividadeprueba
+
+*datostemaentrenamiento
+
+*datostemaprueba
+
+*datoscaracteristicaprueba
+
+*datoscaracteristicaentrenamiento
+
+MERGES THE TRINING AND THE TEST SETS TO CREATE ONE DATA SET.
+
+*dataSubject
+*dataActivity
+*dataFeatures
+*dataCombine: Combine the columns to obtain the dataframe.
+*Data: extract only the mean and sd for each measurement.
+*subdataFeaturesNames
+*selectedNames
+*activityLabels
+*Data2
